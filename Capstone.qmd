@@ -1,0 +1,399 @@
+---
+title: "Gapminder Data : Comparing HIV and TB Data 2007-2011"
+format: dashboard
+theme: materia
+---
+
+```{r}
+# Load packages 
+if(!require(pacman)) install.packages("pacman")
+pacman::p_load(tidyverse, outbreaks, bslib, bsicons, shiny, 
+                plotly, htmltools, reactable, flexdashboard, gapminder, here,janitor,sf,gganimate, countrycode, scales)
+
+library(rgeoboundaries)
+library(rnaturalearth)
+
+```
+
+
+```{r}
+#Import datasets
+HIV_all_ages <-  read_csv(here("datasets/people_living_with_hiv_number_all_ages.csv"))
+HIV_annual_deaths <-  read_csv(here("datasets/annual_hiv_deaths_number_all_ages.csv"))
+Art_Coverage <- read_csv(here("datasets/art_coverage_percent_cd4_l_350.csv"))
+HIV_deaths_Children <- read_csv(here("datasets/hiv_deaths_in_children_1_59_months_total_deaths.csv"))
+TB_HIV_Incidence <- read_csv(here("datasets/tb_hivplus_incidence_estimated.csv"))
+TB_HIV_deaths<- read_csv(here("datasets/tb_hivplus_number_of_deaths_estimated.csv"))
+```
+
+
+```{r include=FALSE}
+HIV_Cases <- HIV_all_ages %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_07 = `2007`, Year_08 = `2008`, Year_09 = `2009`,Year_10 = `2010`, Year_11 = `2011` ) 
+
+
+replace_k_with_numeric <- function(x) {
+  as.numeric(gsub("k", "000", x))
+}
+
+HIV_Cases <- HIV_Cases %>%
+  mutate(across(starts_with("Year"), replace_k_with_numeric))
+
+Country_with_highest_HIV_Cases_2007 <- 
+  HIV_Cases %>% 
+  arrange(desc(Year_07)) %>%  
+  slice(1) %>% 
+  pull(country, Year_07) 
+  
+  
+Country_with_highest_HIV_Cases_2007  
+
+Highest_Cases_2007_value <- HIV_Cases %>%
+  arrange(desc(Year_07)) %>%  
+  pull(Year_07) %>%  
+  head(1)
+Highest_Cases_2007_value
+
+
+Country_with_highest_HIV_Cases_2009 <- 
+  HIV_Cases %>% 
+  arrange(desc(Year_09)) %>%  
+  slice(1) %>% 
+  pull(country)
+
+Country_with_highest_HIV_Cases_2009
+
+ Highest_Cases_2009_value <- HIV_Cases %>%
+  arrange(desc(Year_09)) %>%  
+  pull(Year_09)  %>%  
+  head(1)
+ 
+Highest_Cases_2009_value 
+ 
+
+Country_with_highest_HIV_Cases_2011 <- 
+  HIV_Cases %>% 
+  arrange(desc(Year_11)) %>%  
+  slice(1) %>% 
+  pull(country)
+
+Country_with_highest_HIV_Cases_2011
+
+Highest_Cases_2011_value <- HIV_Cases %>%
+  arrange(desc(Year_11)) %>%  
+  pull(Year_11) %>%  
+  head(1)
+
+Highest_Cases_2011_value
+
+
+
+```
+
+```{r include=FALSE}
+
+Deaths <- HIV_annual_deaths %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_2007 = `2007`, Year_2008 = `2008`, Year_2009 = `2009`,Year_2010 = `2010`, Year_2011 = `2011` )
+
+replace_k_with_numeric <- function(x) {
+  as.numeric(gsub("k", "000", x))
+}
+
+Deaths <- Deaths %>%
+  mutate(across(starts_with("Year"), replace_k_with_numeric))
+
+
+ART_Coverage_real <- Art_Coverage %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_2007 = `2007`, Year_2008 = `2008`, Year_2009 = `2009`,Year_2010 = `2010`, Year_2011 = `2011`)
+
+HIV_deaths_Child  <- HIV_deaths_Children %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_2007 = `2007`, Year_2008 = `2008`, Year_2009 = `2009`,Year_2010 = `2010`, Year_2011 = `2011`)
+
+TB_HIV_Incidence  <- TB_HIV_Incidence  %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_2007 = `2007`, Year_2008 = `2008`, Year_2009 = `2009`,Year_2010 = `2010`, Year_2011 = `2011`) %>%  mutate(across(starts_with("Year"), replace_k_with_numeric))
+
+TB_HIV_deaths  <- TB_HIV_deaths  %>% 
+  select(country, `2007`, `2008`, `2009`, `2010`, `2011`) %>% 
+  rename(Year_2007 = `2007`, Year_2008 = `2008`, Year_2009 = `2009`,Year_2010 = `2010`, Year_2011 = `2011`) %>%  mutate(across(starts_with("Year"), replace_k_with_numeric))
+```
+
+# Page 1
+
+## Row 1{height=25%}
+
+### {width=36%}
+```{r}
+value_box(
+  title = "Country with Highest Number of HIV Cases in 2007",
+  value = paste(Country_with_highest_HIV_Cases_2007, Highest_Cases_2007_value, sep = ": "),
+  showcase = bsicons::bs_icon("virus"),
+  theme = value_box_theme(bg = "#214773")
+)
+
+```
+
+### {width=32%}
+```{r}
+value_box(
+  title = "Country with Highest Number of HIV Cases in 2009",
+  value = paste(Country_with_highest_HIV_Cases_2009, Highest_Cases_2009_value, sep = ": "),
+  showcase = bsicons::bs_icon("virus"),
+  theme = value_box_theme(bg = "#214773")
+)
+```
+
+### {width=32%}
+```{r}
+value_box(
+  title = "Country with Highest Number of HIV Cases in 2011",
+  value = paste(Country_with_highest_HIV_Cases_2011, Highest_Cases_2011_value, sep = ": "),
+  showcase = bsicons::bs_icon("virus"),
+  theme = value_box_theme(bg = "#214773")
+)
+```
+
+
+## Row 2 {.tabset}
+
+### Tab 1
+
+```{r}
+# Reshape the data to long format
+Deaths_long <- Deaths %>%
+  pivot_longer(cols = starts_with("Year"),
+               names_to = "Year",
+               values_to = "Deaths")
+
+# Filter out countries with any missing values
+Deaths_filtered <- Deaths_long %>%
+  group_by(country) %>%
+  filter(all(!is.na(Deaths)))
+
+# Calculate total deaths and find the top 7 countries
+top_countries <- Deaths_filtered %>%
+  group_by(country) %>%
+  summarize(Total_Deaths = sum(Deaths, na.rm = TRUE)) %>%
+  top_n(7, Total_Deaths) %>%
+  arrange(desc(Total_Deaths))
+
+# Filter the long data for top countries
+Deaths_top <- Deaths_filtered %>%
+  filter(country %in% top_countries$country)
+
+# Convert country to a factor based on Total_Deaths for ordering
+Deaths_top$country <- factor(Deaths_top$country, levels = top_countries$country)
+
+# Create the plot
+p <- ggplot(Deaths_top, aes(x = Year, y = Deaths, color = country, group = country)) +
+  geom_line() +
+  geom_point() +  
+  scale_y_continuous(labels = label_number(scale = 1e-3, suffix = "k")) + 
+  labs(title = "Top 7 Countries with Highest Number of Deaths from HIV in 2007-2011",
+       x = "Year",
+       y = "Number of Deaths") +
+  theme_minimal()
+
+# Convert to plotly for interactivity
+ggplotly(p)
+
+```
+
+### Tab 2
+
+```{r}
+HIV_deaths_numeric <- HIV_deaths_Child %>%
+  mutate(across(starts_with("Year"), ~ as.numeric(as.character(.))))
+
+
+top_countries <- HIV_deaths_numeric %>%
+  rowwise() %>%
+  mutate(Total_Deaths = sum(c_across(starts_with("Year")), na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(Total_Deaths)) %>%
+  slice_head(n = 7) %>%
+  select(country, everything())
+
+
+tagList(
+  h3("Top 7 Countries with the Highest HIV-Related Deaths in Children from 2007-2011"),
+  reactable(
+    top_countries, 
+    columns = list(
+      country = colDef(name = "Country"),
+      Year_2007 = colDef(name = "Deaths in 2007"),
+      Year_2008 = colDef(name = "Deaths in 2008"),
+      Year_2009 = colDef(name = "Deaths in 2009"),
+      Year_2010 = colDef(name = "Deaths in 2010"),
+      Year_2011 = colDef(name = "Deaths in 2011"),
+      Total_Deaths = colDef(name = "Total Deaths")
+    ),
+    defaultPageSize = 7,
+    pagination = FALSE
+  )
+)
+
+
+```
+
+
+### Tab 3
+
+```{r}
+# Load country shapes
+country_shapes <- rnaturalearth::ne_countries()
+
+# Prepare ART Coverage data
+Art_Coverage_Map_data <- ART_Coverage_real %>% 
+  mutate(country_code = countrycode(country, "country.name", "iso3c")) %>% 
+  select(country, country_code, Year_2007, Year_2008, Year_2009, Year_2010, Year_2011)
+
+# Calculate average coverage across the years
+Art_Coverage_Map_data <- Art_Coverage_Map_data %>%
+  mutate(Average_Coverage = rowMeans(select(., starts_with("Year_")), na.rm = TRUE))
+
+# Join with country shapes
+gapmap <- left_join(country_shapes, Art_Coverage_Map_data, by = c("adm0_a3" = "country_code")) %>%
+  mutate(tooltip_label = paste(country, round(Average_Coverage, 1), sep = ":"))
+
+# Create the map
+gap_map_plot <- ggplot(gapmap) +
+  geom_sf(aes(fill = Average_Coverage, text = tooltip_label)) +
+  theme_void() +
+  theme(legend.position = "bottom") +
+  labs(fill = "Average ART Coverage")
+
+# Convert to plotly for interactive features
+gap_map_plotly <- ggplotly(gap_map_plot, tooltip = "text")
+```
+
+```{r title = "Average ART Coverage across Countries over 2007  to 2011"}
+gap_map_plotly
+```
+
+# Page 2
+
+## Row 1{height=50%}
+
+```{r}
+top_tb_countries <- TB_HIV_Incidence %>%
+  rowwise() %>%
+  mutate(Total_Incidence = sum(c_across(starts_with("Year_")), na.rm = TRUE)) %>%
+  ungroup() %>%
+  arrange(desc(Total_Incidence)) %>%
+  slice_head(n = 7) %>%
+  select(country, starts_with("Year_"))
+
+# Reshape data to long format
+tb_long <- top_tb_countries %>%
+  pivot_longer(cols = starts_with("Year_"),
+               names_to = "Year",
+               values_to = "Incidence") %>%
+  mutate(Year = sub("Year_", "", Year),
+         Year = as.integer(Year))
+
+# Factor the country variable based on total incidence for proper ordering
+tb_long$country <- factor(tb_long$country, levels = top_tb_countries$country)
+
+# Create the plot
+tb_plot <- ggplot(tb_long, aes(x = Year, y = Incidence, color = country, group = country)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(labels = label_number(scale = 1e-3, suffix = "k")) + 
+  labs(title = "TB_HIV Incidence Trend from 2007 to 2011",
+       x = "Year",
+       y = "TB Incidence (in thousands)",
+       color = "Country") +
+  theme_minimal()
+
+# Convert to plotly for interactive visualization
+tb_plotly <- ggplotly(tb_plot)
+
+# Display the plot
+tb_plotly
+```
+## Row 2{height=50%}
+
+```{r}
+top_tb_deaths <- TB_HIV_deaths %>%
+  mutate(Total_Deaths = rowSums(select(., starts_with("Year_")), na.rm = TRUE)) %>%
+  arrange(desc(Total_Deaths)) %>%
+  slice_head(n = 7) %>%
+  select(country, starts_with("Year_"), Total_Deaths)
+
+
+tb_long <- top_tb_deaths %>%
+  pivot_longer(cols = starts_with("Year_"),
+               names_to = "Year",
+               values_to = "Deaths") %>%
+  mutate(Year = sub("Year_", "", Year),
+         Year = as.integer(Year))
+
+
+tb_long$country <- factor(tb_long$country, levels = top_tb_deaths$country)
+
+
+tb_plot <- ggplot(tb_long, aes(x = Year, y = Deaths, color = country, group = country)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(labels = label_number(scale = 1e-3, suffix = "k")) +  
+  labs(title = "TB_HIV Mortality Trend from 2007 to 2011",
+       x = "Year",
+       y = "Number of Deaths (in thousands)",
+       color = "Country") +
+  theme_minimal()
+
+
+tb_plotly <- ggplotly(tb_plot)
+
+
+tb_plotly
+```
+
+
+
+
+# DOWNLOAD DATA
+
+The data used in this dashboard is shown below and can be downloaded as a CSV.
+
+```{r}
+library(htmltools)
+
+htmltools::browsable(
+  tagList(
+    reactable(gapminder, 
+      elementId = "gapminder-table",
+    searchable = T,
+          filterable = T),
+     
+    tags$button("Download as CSV", onclick = "Reactable.downloadDataCSV('gapminder-table')"),
+  )
+)
+
+```
+
+
+
+
+
+# ABOUT
+
+This data comes from the r 'gapminder' package , and is originally sourced from the Gapminder Foundation.
+
+The Gapminder Foundation is a non-profit venture registered in Stockholm, Sweden, that promotes sustainable global development and achievement of the United Nations Millennium Development Goals by increased use and understanding of statistics and other information about social, economic, and environmental development at local, national, and global levels.
+
+Gapminder was founded in 2005 by Ola Rosling, Anna Rosling Rönnlund, and Hans Rosling. The name Gapminder was derived from the "Mind the Gap" warning messages on the London Underground.
+
+An example of Hans Rosling Video is shown below:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hVimVzgtD6w?si=DcYWr0isYwMhzEsv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+
+
+

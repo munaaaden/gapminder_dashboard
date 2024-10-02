@@ -1,0 +1,1 @@
+https://munaaaden.github.io/gapminder_dashboard/#page-1
